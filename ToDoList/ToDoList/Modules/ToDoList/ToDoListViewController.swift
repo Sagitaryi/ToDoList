@@ -8,11 +8,17 @@
 import UIKit
 
 final class ToDoListViewController: UIViewController {
+        private lazy var customView = ToDoListView()
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupNavBar()
-    }
+        override func loadView() {
+            view = customView
+        }
+    
+        override func viewDidLoad() {
+            super.viewDidLoad()
+            setupNavBar()
+        }
+
 
     func setupNavBar() {
         title = "Задачи"
