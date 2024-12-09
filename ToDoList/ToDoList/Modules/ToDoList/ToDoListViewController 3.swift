@@ -8,6 +8,11 @@
 import UIKit
 
 final class ToDoListViewController: UIViewController {
+    private lazy var customView = ToDoListView()
+    
+    override func loadView() {
+        view = customView
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
