@@ -9,14 +9,15 @@ import UIKit
 import CoreData
 
 protocol CoreDataManagerProtocol {
-    func getAllItems() -> [ToDoListItem]?
+    func getAllItems() -> [ToDoItemEntity]
     func createItem(with model: ToDoItem)
     func updateItem(item: ToDoItem)
-    func deleteItem(item: ToDoListItem)
+    func deleteItem(item: ToDoItemEntity)
+    func deleteAllItems()
 }
 
 final class CoreDataManager: CoreDataManagerProtocol {
-    // MARK: - private let/var
+    // MARK: - Private Properties
     private var appDelegate: AppDelegate {
         UIApplication.shared.delegate as! AppDelegate
     }
@@ -26,7 +27,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
 
     // MARK: - CRUD
     func createItem(with model: ToDoItem) {
-        let newItem = ToDoListItem(context: context)
+        let newItem = ToDoItemEntity(context: context)
         newItem.id = model.id
         newItem.title = model.title
         newItem.date = model.createdAt
@@ -36,32 +37,41 @@ final class CoreDataManager: CoreDataManagerProtocol {
         appDelegate.saveContext()
     }
 
-    func getAllItems() -> [ToDoListItem]? {
+    func getAllItems() -> [ToDoItemEntity] {
         do {
-            let items = try context.fetch(ToDoListItem.fetchRequest())
+            let items = try context.fetch(ToDoItemEntity.fetchRequest())
             return items
         }
         catch {
             print("Error fetching data: \(error)")
-            return nil
+            return []
         }
     }
 
     func updateItem(item: ToDoItem) {
         let items = getAllItems()
 
-        if items != nil {
-            if let itemToUpdate = items?.first(where: { $0.id == item.id }) {
+            if let itemToUpdate = items.first(where: { $0.id == item.id }) {
+                itemToUpdate.title = item.title
                 itemToUpdate.text = item.description
+                itemToUpdate.isCompleted = item.isCompleted
             } else {
                 print("Data saving error")
             }
-        }
+
         appDelegate.saveContext()
     }
 
-    func deleteItem(item: ToDoListItem) {
+    func deleteItem(item: ToDoItemEntity) {
         context.delete(item)
         appDelegate.saveContext()
+    }
+
+    func deleteAllItems() {
+        let items = getAllItems()
+        items.forEach { item in
+            deleteItem(item: item)
+        }
+
     }
 }

@@ -7,6 +7,7 @@
 import UIKit
 
 final class ToDoListView: UIView {
+    private let tableManager = ToDoListTableManager()
 
     // MARK: - UI Elements
     private lazy var bottomBlockContentView: UIView = {
@@ -25,7 +26,6 @@ final class ToDoListView: UIView {
         let label = UILabel()
         label.font = .boldSystemFont(ofSize: 11)
         label.textColor = .whiteToDo
-        label.text = "N задач"
         return label
     }()
 
@@ -34,6 +34,27 @@ final class ToDoListView: UIView {
         button.setImage(UIImage(named: "createNewToDoItem.png"), for: .normal)
         button.addTarget(self, action: #selector(showScreenToCreateNewTask), for: .touchUpInside)
         return button
+    }()
+
+    private lazy var toDoListTableView: UITableView = {
+        let table = UITableView()
+
+        table.register(
+            ToDoListTableViewCell.self,
+            forCellReuseIdentifier: ToDoListTableViewCell.id
+        )
+        table.separatorInset = .zero
+        table.tableFooterView = UIView()
+        table.backgroundColor = .clear
+        table.separatorStyle = .singleLine
+        table.separatorColor = .grayToDo
+        table.showsVerticalScrollIndicator = false
+
+        tableManager.set(tableView: table)
+        tableManager.tapStatusButton = { [weak self] index in
+            print("index: \(index.row)")
+        }
+        return table
     }()
 
     // MARK: - Initializers
@@ -47,6 +68,23 @@ final class ToDoListView: UIView {
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
+    func updateTableToDoList(model: [ToDoItem]) {
+        tableManager.bind(items: model)
+    }
+
+    func updateNumberToDo(items: String) {
+        countAllToDoLabel.text = items
+    }
+
+    func startLoader() {
+        print("Start Loader")
+    }
+
+    func stopLoader() {
+        print("Stop Loader")
+    }
+
 }
 
 private extension ToDoListView {
@@ -67,6 +105,8 @@ private extension ToDoListView {
         bottomBlockContentView.addSubview(bottomBlockActionView)
         bottomBlockContentView.addSubview(countAllToDoLabel)
         bottomBlockContentView.addSubview(createNewToDoButton)
+
+        addSubview(toDoListTableView)
     }
 
     func setupConstraints() {
@@ -74,6 +114,7 @@ private extension ToDoListView {
         bottomBlockActionView.translatesAutoresizingMaskIntoConstraints = false
         countAllToDoLabel.translatesAutoresizingMaskIntoConstraints = false
         createNewToDoButton.translatesAutoresizingMaskIntoConstraints = false
+        toDoListTableView.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             bottomBlockContentView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -93,7 +134,11 @@ private extension ToDoListView {
             createNewToDoButton.heightAnchor.constraint(equalToConstant: 40),
             createNewToDoButton.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -20),
             createNewToDoButton.centerYAnchor.constraint(equalTo: bottomBlockActionView.centerYAnchor),
-        ])
 
+            toDoListTableView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 0),
+            toDoListTableView.bottomAnchor.constraint(equalTo: bottomBlockContentView.topAnchor, constant: 0),
+            toDoListTableView.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor),
+            toDoListTableView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor)
+        ])
     }
 }

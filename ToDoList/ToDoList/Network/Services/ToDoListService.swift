@@ -12,7 +12,11 @@ protocol ToDoListServiceProtocol {
 }
 
 final class ToDoListService: ToDoListServiceProtocol {
-    private let networkClient = NetworkClient()
+    private let networkClient: NetworkClientProtocol
+
+    init(networkClient: NetworkClientProtocol) {
+        self.networkClient = networkClient
+    }
 
     func fetchToDoList(queue: DispatchQueue = .main, completion: @escaping (Result<ToDoList, NetworkClientError>) -> Void) {
         guard case let .success(urlRequest) = ToDoRequestBuilder().makeRequest() else {
