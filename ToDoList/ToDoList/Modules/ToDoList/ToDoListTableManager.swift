@@ -8,7 +8,7 @@
 import UIKit
 
 final class ToDoListTableManager: NSObject {
-    var tapStatusButton: ((_ indexPath: IndexPath) -> Void)?
+    var tapStatusButton: ((_ id: UUID) -> Void)?
 
     private weak var tableView: UITableView?
     private var items: [ToDoItem]?
@@ -37,10 +37,7 @@ final class ToDoListTableManager: NSObject {
 
 extension ToDoListTableManager: UITableViewDelegate {
     // MARK: - UITableViewDelegate Methods
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        tapStatusButton?(indexPath)
-    }
+
 }
 
 private extension ToDoListTableManager {
@@ -63,7 +60,10 @@ private extension ToDoListTableManager {
                                      isCompleted: item.isCompleted
             )
 
-            cell.configure(with: cellModel)
+            cell.configure(with: cellModel) { [self] in
+                guard let tapStatusButton = tapStatusButton else { return }
+                tapStatusButton(item.id)
+            }
             return cell
         })
     }

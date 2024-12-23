@@ -10,7 +10,7 @@ import UIKit
 final class ToDoListTableViewCell: UITableViewCell {
     static let id = "ToDoListTableViewCell"
 
-    var tapStatusButton: ((_ indexPath: IndexPath) -> Void)?
+    var tapStatusButton: (() -> Void)?
 
     // MARK: - UI Elements
     private var toDoDetailsView: UIView = {
@@ -38,9 +38,11 @@ final class ToDoListTableViewCell: UITableViewCell {
         return label
     }()
 
-    private var statusButtonImageView: UIImageView = {
+    private lazy var statusButtonImageView: UIImageView = {
         let button = UIImageView()
-        let recognizer = UITapGestureRecognizer(target: ToDoListTableViewCell.self, action: #selector(statusButtonTapped))
+        button.isUserInteractionEnabled = true
+
+        let recognizer = UITapGestureRecognizer(target: self, action: #selector(statusButtonTapped))
         button.addGestureRecognizer(recognizer)
         return button
     }()
@@ -56,12 +58,24 @@ final class ToDoListTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - Touch Handling
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let bounds = statusButtonImageView.frame.insetBy(dx: -10, dy: -10)
+
+        if bounds.contains(point) {
+            return statusButtonImageView
+        }
+        return super.hitTest(point, with: event)
+    }
+
     // MARK: - Configuration
-    func configure(with model: ToDoItem) {
+    func configure(with model: ToDoItem, onTapStatusButton: (() -> ())?) {
+        tapStatusButton = onTapStatusButton
         if model.isCompleted {
             statusButtonImageView.image = UIImage(named: "completed.png")
 
-            titleLabel.attributedText = model.title.strikeThrough()
+            titleLabel.attributedText = model.title.strikeThrough() // FIXME: добавить в расширение атрибуты для невыполненных дел
+            titleLabel.textColor = .grayToDo
             descriptionLabel.textColor = .grayToDo
         } else {
             statusButtonImageView.image = UIImage(named: "notCompleted.png")
@@ -71,12 +85,6 @@ final class ToDoListTableViewCell: UITableViewCell {
         }
         descriptionLabel.text = model.description
         createAtLabel.text = "\(model.createdAt)"
-    }
-
-    // MARK: - Actions
-    @objc
-    func statusButtonTapped() {
-
     }
 }
 
@@ -98,10 +106,13 @@ private extension ToDoListTableViewCell {
     func setupSubviews() {
         contentView.addSubview(statusButtonImageView)
 
+
         contentView.addSubview(toDoDetailsView)
         toDoDetailsView.addSubview(titleLabel)
         toDoDetailsView.addSubview(descriptionLabel)
         toDoDetailsView.addSubview(createAtLabel)
+
+        contentView.bringSubviewToFront(statusButtonImageView)
     }
 
     func setupConstraints() {
@@ -135,5 +146,11 @@ private extension ToDoListTableViewCell {
             createAtLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: ConstantConstraint.spacingBetweenContent),
             createAtLabel.bottomAnchor.constraint(equalTo: toDoDetailsView.bottomAnchor, constant: -ConstantConstraint.spacingBetweenContent),
         ])
+    }
+
+    // MARK: - Actions
+    @objc func statusButtonTapped() {
+        tapStatusButton?()
+        print("Tapped button")
     }
 }

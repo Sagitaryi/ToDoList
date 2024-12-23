@@ -12,6 +12,7 @@ protocol CoreDataManagerProtocol {
     func getAllItems() -> [ToDoItemEntity]
     func createItem(with model: ToDoItem)
     func updateItem(item: ToDoItem)
+    func updateToDoCompletionStatus(withId id: UUID)
     func deleteItem(item: ToDoItemEntity)
     func deleteAllItems()
 }
@@ -25,7 +26,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
         appDelegate.persistentContainer.viewContext
     }
 
-    // MARK: - CRUD
+    // MARK: - Creating Data
     func createItem(with model: ToDoItem) {
         let newItem = ToDoItemEntity(context: context)
         newItem.id = model.id
@@ -37,6 +38,7 @@ final class CoreDataManager: CoreDataManagerProtocol {
         appDelegate.saveContext()
     }
 
+    // MARK: - Fetching Data
     func getAllItems() -> [ToDoItemEntity] {
         do {
             let items = try context.fetch(ToDoItemEntity.fetchRequest())
@@ -48,20 +50,38 @@ final class CoreDataManager: CoreDataManagerProtocol {
         }
     }
 
+    // MARK: - Updating Data
     func updateItem(item: ToDoItem) {
-        let items = getAllItems()
-
-            if let itemToUpdate = items.first(where: { $0.id == item.id }) {
+        let fetchRequest: NSFetchRequest<ToDoItemEntity> = ToDoItemEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", item.id as CVarArg)
+        do {
+            let result = try self.context.fetch(fetchRequest)
+            if let itemToUpdate = result.first {
                 itemToUpdate.title = item.title
                 itemToUpdate.text = item.description
                 itemToUpdate.isCompleted = item.isCompleted
-            } else {
-                print("Data saving error")
             }
+        } catch {
+            print("Data saving error")
+        }
 
         appDelegate.saveContext()
     }
 
+    func updateToDoCompletionStatus(withId id: UUID) {
+        let fetchRequest: NSFetchRequest<ToDoItemEntity> = ToDoItemEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        do {
+            let result = try self.context.fetch(fetchRequest)
+            result.first?.isCompleted.toggle()
+        } catch {
+            print("To-do not found in Core Data for status update")
+        }
+
+        appDelegate.saveContext()
+    }
+
+    // MARK: - Deleting Data
     func deleteItem(item: ToDoItemEntity) {
         context.delete(item)
         appDelegate.saveContext()

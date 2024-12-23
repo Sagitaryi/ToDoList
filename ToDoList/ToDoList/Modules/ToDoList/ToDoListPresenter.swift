@@ -11,6 +11,7 @@ protocol ToDoListPresenterProtocol {
     var title: String { get }
 
     func viewDidLoad()
+    func updateToDoCompletionStatus(toDoId: UUID)
 }
 
 final class ToDoListPresenter: ToDoListPresenterProtocol {
@@ -40,7 +41,7 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
             switch result {
             case let .success(model):
                 toDoModel = model
-                view?.updateTableToDoList(model: toDoModel)
+                updateTableView(with: toDoModel)
                 updateCountToDo(numbers: toDoModel.count)
             case let .failure(error):
                 print(error)
@@ -48,8 +49,17 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
         }
     }
 
+    func updateToDoCompletionStatus(toDoId: UUID) {
+        let items = interactor.updateToDoCompletionStatus(toDoId: toDoId)
+        updateTableView(with: items)
+    }
+// MARK: - Private Methods
+private extension ToDoListPresenter {
     func updateCountToDo(numbers: Int) {
         view?.updateNumberToDo(items: "\(numbers) Задач")
     }
 
+    func updateTableView(with model: [ToDoItem]) {
+        view?.updateTableToDoList(model: model)
+    }
 }

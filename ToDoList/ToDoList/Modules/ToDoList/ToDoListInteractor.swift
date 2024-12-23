@@ -9,6 +9,7 @@ import UIKit
 
 protocol ToDoListInteractorProtocol {
     func fetchToDoItems(completion: @escaping (Result<[ToDoItem], Error>) -> Void)
+    func updateToDoCompletionStatus(toDoId: UUID) -> [ToDoItem]
 }
 
 final class ToDoListInteractor: ToDoListInteractorProtocol {
@@ -22,7 +23,7 @@ final class ToDoListInteractor: ToDoListInteractorProtocol {
         self.coreDataManager = coreDataManager
     }
 
-    // MARK: - Data Handling Methods
+    // MARK: - Data Handling Method
     func fetchToDoItems(completion: @escaping (Result<[ToDoItem], Error>) -> Void) {
         let dataFromCoreData = coreDataManager.getAllItems()
 
@@ -43,12 +44,18 @@ final class ToDoListInteractor: ToDoListInteractorProtocol {
         }
     }
 
+    // MARK: - ToDo Completion Status
+    func updateToDoCompletionStatus(toDoId: UUID) -> [ToDoItem] {
+        coreDataManager.updateToDoCompletionStatus(withId: toDoId)
+        return convert(model: coreDataManager.getAllItems())
+    }
     func saveReceivedDataToCoreData(data: [ToDoItem]) {
         data.forEach { item in
             coreDataManager.createItem(with: item)
         }
     }
 
+    // MARK: - Model Conversion
     func convert(model: [ToDoItemEntity]) -> [ToDoItem] {
         let newModel = model.map { item in
             ToDoItem(id: item.id,

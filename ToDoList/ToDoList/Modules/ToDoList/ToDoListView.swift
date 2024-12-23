@@ -7,7 +7,9 @@
 import UIKit
 
 final class ToDoListView: UIView {
+    private let presenter: ToDoListPresenterProtocol
     private let tableManager = ToDoListTableManager()
+
 
     // MARK: - UI Elements
     private lazy var bottomBlockContentView: UIView = {
@@ -51,14 +53,15 @@ final class ToDoListView: UIView {
         table.showsVerticalScrollIndicator = false
 
         tableManager.set(tableView: table)
-        tableManager.tapStatusButton = { [weak self] index in
-            print("index: \(index.row)")
+        tableManager.tapStatusButton = { [self] id in
+            updateToDoCompletionStatus(toDoId: id)
         }
         return table
     }()
 
     // MARK: - Initializers
-    init() {
+    init(presenter: ToDoListPresenterProtocol) {
+        self.presenter = presenter
         super.init(frame: .zero)
         backgroundColor = .blackToDo
         commonInit()
@@ -72,6 +75,11 @@ final class ToDoListView: UIView {
     func updateTableToDoList(model: [ToDoItem]) {
         tableManager.bind(items: model)
     }
+
+    func updateToDoCompletionStatus(toDoId: UUID) {
+        presenter.updateToDoCompletionStatus(toDoId: toDoId)
+    }
+
 
     func updateNumberToDo(items: String) {
         countAllToDoLabel.text = items

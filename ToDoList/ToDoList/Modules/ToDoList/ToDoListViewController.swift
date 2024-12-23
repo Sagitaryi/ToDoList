@@ -16,7 +16,7 @@ protocol ToDoListViewProtocol: AnyObject {
 
 final class ToDoListViewController: UIViewController {
     private let presenter: ToDoListPresenterProtocol
-    private lazy var customView = ToDoListView()
+    private lazy var customView = ToDoListView(presenter: presenter)
 
     init(presenter: ToDoListPresenterProtocol) {
         self.presenter = presenter
