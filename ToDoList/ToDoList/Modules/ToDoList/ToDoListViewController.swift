@@ -18,6 +18,7 @@ final class ToDoListViewController: UIViewController {
     private let presenter: ToDoListPresenterProtocol
     private lazy var customView = ToDoListView(presenter: presenter)
 
+    // MARK: - Initializer
     init(presenter: ToDoListPresenterProtocol) {
         self.presenter = presenter
         super.init(nibName: nil, bundle: nil)
@@ -28,6 +29,7 @@ final class ToDoListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - View Lifecycle
     override func loadView() {
         view = customView
     }
@@ -38,6 +40,7 @@ final class ToDoListViewController: UIViewController {
         presenter.viewDidLoad()
     }
 
+    // MARK: - Navigation Bar Setup
     func setupNavBar() {
         title = presenter.title
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -55,8 +58,21 @@ final class ToDoListViewController: UIViewController {
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.delegate = self
         return searchController
     }()
+
+}
+
+// MARK: - UISearchBarDelegate
+extension ToDoListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        presenter.searchItems(with: searchText)
+    }
+
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        presenter.searchItems(with: "")
+    }
 }
 
 extension ToDoListViewController: ToDoListViewProtocol {
@@ -75,6 +91,4 @@ extension ToDoListViewController: ToDoListViewProtocol {
     func stopLoader() {
         customView.stopLoader()
     }
-
 }
-

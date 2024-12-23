@@ -13,6 +13,7 @@ protocol CoreDataManagerProtocol {
     func createItem(with model: ToDoItem)
     func updateItem(item: ToDoItem)
     func updateToDoCompletionStatus(withId id: UUID)
+    func searchItems(with query: String) -> [ToDoItemEntity]
     func deleteItem(item: ToDoItemEntity)
     func deleteAllItems()
 }
@@ -79,6 +80,19 @@ final class CoreDataManager: CoreDataManagerProtocol {
         }
 
         appDelegate.saveContext()
+    }
+
+    // MARK: - Searching Data
+    func searchItems(with query: String) -> [ToDoItemEntity] {
+        let fetchRequest: NSFetchRequest<ToDoItemEntity> = ToDoItemEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "text CONTAINS[cd] %@", query)
+        do {
+            let results = try context.fetch(fetchRequest)
+            return results
+        } catch {
+            print("Error fetching data: \(error)")
+            return []
+        }
     }
 
     // MARK: - Deleting Data

@@ -10,6 +10,7 @@ import UIKit
 protocol ToDoListInteractorProtocol {
     func fetchToDoItems(completion: @escaping (Result<[ToDoItem], Error>) -> Void)
     func updateToDoCompletionStatus(toDoId: UUID) -> [ToDoItem]
+    func searchItems(with query: String) -> [ToDoItem]
 }
 
 final class ToDoListInteractor: ToDoListInteractorProtocol {
@@ -49,6 +50,20 @@ final class ToDoListInteractor: ToDoListInteractorProtocol {
         coreDataManager.updateToDoCompletionStatus(withId: toDoId)
         return convert(model: coreDataManager.getAllItems())
     }
+
+    func searchItems(with query: String) -> [ToDoItem] {
+        let result: [ToDoItemEntity]
+        if query.isEmpty {
+            result = coreDataManager.getAllItems()
+        } else {
+            result = coreDataManager.searchItems(with: query)
+        }
+        return convert(model: result)
+    }
+}
+
+private extension ToDoListInteractor {
+    // MARK: - CoreData Operations
     func saveReceivedDataToCoreData(data: [ToDoItem]) {
         data.forEach { item in
             coreDataManager.createItem(with: item)
@@ -67,5 +82,4 @@ final class ToDoListInteractor: ToDoListInteractorProtocol {
         }
         return newModel
     }
-
 }

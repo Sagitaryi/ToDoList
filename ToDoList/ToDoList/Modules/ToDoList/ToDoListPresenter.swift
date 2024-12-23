@@ -12,6 +12,7 @@ protocol ToDoListPresenterProtocol {
 
     func viewDidLoad()
     func updateToDoCompletionStatus(toDoId: UUID)
+    func searchItems(with query: String)
 }
 
 final class ToDoListPresenter: ToDoListPresenterProtocol {
@@ -53,6 +54,14 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
         let items = interactor.updateToDoCompletionStatus(toDoId: toDoId)
         updateTableView(with: items)
     }
+
+    func searchItems(with query: String) {
+        let result = interactor.searchItems(with: query)
+        updateCountToDo(numbers: result.count)
+        updateTableView(with: result)
+    }
+}
+
 // MARK: - Private Methods
 private extension ToDoListPresenter {
     func updateCountToDo(numbers: Int) {
