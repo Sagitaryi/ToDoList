@@ -17,6 +17,7 @@ final class ToDoListInteractor: ToDoListInteractorProtocol {
     // MARK: - Properties
     private let toDoListService: ToDoListServiceProtocol
     private let coreDataManager: CoreDataManagerProtocol
+    private var searchQuery: String?
 
     // MARK: - Initializer
     init(toDoListService: ToDoListServiceProtocol, coreDataManager: CoreDataManagerProtocol) {
@@ -48,10 +49,17 @@ final class ToDoListInteractor: ToDoListInteractorProtocol {
     // MARK: - ToDo Completion Status
     func updateToDoCompletionStatus(toDoId: UUID) -> [ToDoItem] {
         coreDataManager.updateToDoCompletionStatus(withId: toDoId)
-        return convert(model: coreDataManager.getAllItems())
+        let items: [ToDoItem]
+        if let query = searchQuery, searchQuery != "" {
+            items = searchItems(with: query)
+        } else {
+            items = convert(model: coreDataManager.getAllItems())
+        }
+        return items
     }
 
     func searchItems(with query: String) -> [ToDoItem] {
+        searchQuery = query
         let result: [ToDoItemEntity]
         if query.isEmpty {
             result = coreDataManager.getAllItems()

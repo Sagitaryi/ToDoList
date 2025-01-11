@@ -11,7 +11,7 @@ final class ToDoListTableManager: NSObject {
     var tapStatusButton: ((_ id: UUID) -> Void)?
 
     private weak var tableView: UITableView?
-    private var items: [ToDoItem]?
+    private var items: [ToDoItem] = []
     private var diffableDataSource: UITableViewDiffableDataSource<Int, ToDoItem>?
 
     // MARK: - Public Methods
@@ -29,7 +29,6 @@ final class ToDoListTableManager: NSObject {
     func updateDiffableDataSource() {
         var snapshot = NSDiffableDataSourceSnapshot<Int, ToDoItem>()
         snapshot.appendSections([0])
-        guard let items = items else { return }
         snapshot.appendItems(items)
         diffableDataSource?.apply(snapshot, animatingDifferences: false)
     }
@@ -46,12 +45,13 @@ private extension ToDoListTableManager {
         guard let tableView = tableView else { return }
         diffableDataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { tableView, indexPath, _ in
             let row = indexPath.row
-            guard let items = self.items,
-                  items.indices.contains(row), let cell = tableView.dequeueReusableCell(withIdentifier: ToDoListTableViewCell.id) as? ToDoListTableViewCell
+
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ToDoListTableViewCell.id) as? ToDoListTableViewCell,
+                  self.items.indices.contains(row)
             else {
                 return UITableViewCell()
             }
-            let item = items[row]
+            let item = self.items[row]
 
             let cellModel = ToDoItem(id: item.id,
                                      title: item.title,
@@ -59,9 +59,10 @@ private extension ToDoListTableManager {
                                      createdAt: item.createdAt,
                                      isCompleted: item.isCompleted
             )
+            cell.selectionStyle = .none
 
-            cell.configure(with: cellModel) { [self] in
-                guard let tapStatusButton = tapStatusButton else { return }
+            cell.configure(with: cellModel) {
+                guard let tapStatusButton = self.tapStatusButton else { return }
                 tapStatusButton(item.id)
             }
             return cell

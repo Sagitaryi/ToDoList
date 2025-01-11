@@ -35,15 +35,13 @@ final class ToDoListPresenter: ToDoListPresenterProtocol {
     func viewDidLoad() {
         view?.startLoader()
 
-        var toDoModel = [ToDoItem]()
-        
-        interactor.fetchToDoItems { [self] result in
-            print("Stop")
+        interactor.fetchToDoItems { [weak self] result in
+            guard let self else { return }
             switch result {
             case let .success(model):
-                toDoModel = model
-                updateTableView(with: toDoModel)
-                updateCountToDo(numbers: toDoModel.count)
+                updateTableView(with: model)
+                updateCountToDo(numbers: model.count)
+                view?.stopLoader()
             case let .failure(error):
                 print(error)
             }

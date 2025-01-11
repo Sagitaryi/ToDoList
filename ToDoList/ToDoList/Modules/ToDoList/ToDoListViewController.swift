@@ -52,26 +52,29 @@ final class ToDoListViewController: UIViewController {
         setNeedsStatusBarAppearanceUpdate()
 
         navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
         self.navigationController?.navigationBar.backgroundColor = .blackToDo
     }
 
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
-        searchController.searchBar.delegate = self
         return searchController
     }()
 
 }
 
 // MARK: - UISearchBarDelegate
-extension ToDoListViewController: UISearchBarDelegate {
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        presenter.searchItems(with: searchText)
-    }
-
-    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        presenter.searchItems(with: "")
+extension ToDoListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let searchText = searchController.searchBar.text else { return }
+        if searchText.isEmpty {
+            presenter.searchItems(with: "")
+        } else {
+            presenter.searchItems(with: searchText)
+        }
     }
 }
 
