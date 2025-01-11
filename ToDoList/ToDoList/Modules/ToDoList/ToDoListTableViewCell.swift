@@ -38,8 +38,8 @@ final class ToDoListTableViewCell: UITableViewCell {
         return label
     }()
 
-    private lazy var statusButtonImageView: UIImageView = {
-        let button = UIImageView()
+    private lazy var statusButtonImageView: CustomImageView = {
+        let button = CustomImageView()
         button.isUserInteractionEnabled = true
 
         let recognizer = UITapGestureRecognizer(target: self, action: #selector(statusButtonTapped))
@@ -58,23 +58,13 @@ final class ToDoListTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: - Touch Handling
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let bounds = statusButtonImageView.frame.insetBy(dx: -10, dy: -10)
-
-        if bounds.contains(point) {
-            return statusButtonImageView
-        }
-        return super.hitTest(point, with: event)
-    }
-
     // MARK: - Configuration
     func configure(with model: ToDoItem, onTapStatusButton: (() -> ())?) {
         tapStatusButton = onTapStatusButton
         if model.isCompleted {
             statusButtonImageView.image = UIImage(named: "completed.png")
 
-            titleLabel.attributedText = model.title.strikeThrough() // FIXME: добавить в расширение атрибуты для невыполненных дел
+            titleLabel.attributedText = model.title.strikeThrough()
             titleLabel.textColor = .grayToDo
             descriptionLabel.textColor = .grayToDo
         } else {
@@ -90,7 +80,7 @@ final class ToDoListTableViewCell: UITableViewCell {
 
 private extension ToDoListTableViewCell {
     // MARK: - Constants
-    enum ConstantConstraint {
+    enum ConstantsConstraint {
         static let sizeStatusButton: CGFloat = 25
         static let distanceToSide: CGFloat = 18
         static let spacingBetweenContent: CGFloat = 10
@@ -105,7 +95,6 @@ private extension ToDoListTableViewCell {
 
     func setupSubviews() {
         contentView.addSubview(statusButtonImageView)
-
 
         contentView.addSubview(toDoDetailsView)
         toDoDetailsView.addSubview(titleLabel)
@@ -123,34 +112,33 @@ private extension ToDoListTableViewCell {
         createAtLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            statusButtonImageView.heightAnchor.constraint(equalToConstant: ConstantConstraint.sizeStatusButton),
-            statusButtonImageView.widthAnchor.constraint(equalToConstant: ConstantConstraint.sizeStatusButton),
+            statusButtonImageView.heightAnchor.constraint(equalToConstant: ConstantsConstraint.sizeStatusButton),
+            statusButtonImageView.widthAnchor.constraint(equalToConstant: ConstantsConstraint.sizeStatusButton),
             statusButtonImageView.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
-            statusButtonImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: ConstantConstraint.distanceToSide),
+            statusButtonImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: ConstantsConstraint.distanceToSide),
 
-            toDoDetailsView.leadingAnchor.constraint(equalTo: statusButtonImageView.trailingAnchor, constant: ConstantConstraint.spacingBetweenContent),
-            toDoDetailsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -ConstantConstraint.distanceToSide),
+            toDoDetailsView.leadingAnchor.constraint(equalTo: statusButtonImageView.trailingAnchor, constant: ConstantsConstraint.spacingBetweenContent),
+            toDoDetailsView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -ConstantsConstraint.distanceToSide),
             toDoDetailsView.topAnchor.constraint(equalTo: contentView.topAnchor),
             toDoDetailsView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
 
             titleLabel.leadingAnchor.constraint(equalTo: toDoDetailsView.leadingAnchor),
             titleLabel.trailingAnchor.constraint(equalTo: toDoDetailsView.trailingAnchor),
-            titleLabel.topAnchor.constraint(equalTo: toDoDetailsView.topAnchor, constant: ConstantConstraint.spacingBetweenContent),
+            titleLabel.topAnchor.constraint(equalTo: toDoDetailsView.topAnchor, constant: ConstantsConstraint.spacingBetweenContent),
 
             descriptionLabel.leadingAnchor.constraint(equalTo: toDoDetailsView.leadingAnchor),
             descriptionLabel.trailingAnchor.constraint(equalTo: toDoDetailsView.trailingAnchor),
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: ConstantConstraint.spacingBetweenContent),
+            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: ConstantsConstraint.spacingBetweenContent),
 
             createAtLabel.leadingAnchor.constraint(equalTo: toDoDetailsView.leadingAnchor),
             createAtLabel.trailingAnchor.constraint(equalTo: toDoDetailsView.trailingAnchor),
-            createAtLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: ConstantConstraint.spacingBetweenContent),
-            createAtLabel.bottomAnchor.constraint(equalTo: toDoDetailsView.bottomAnchor, constant: -ConstantConstraint.spacingBetweenContent),
+            createAtLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: ConstantsConstraint.spacingBetweenContent),
+            createAtLabel.bottomAnchor.constraint(equalTo: toDoDetailsView.bottomAnchor, constant: -ConstantsConstraint.spacingBetweenContent),
         ])
     }
 
     // MARK: - Actions
     @objc func statusButtonTapped() {
         tapStatusButton?()
-        print("Tapped button")
     }
 }
